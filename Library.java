@@ -14,7 +14,7 @@ public class Library extends DbConnection{
     private boolean flag,flag1;
     private final Scanner sc = new Scanner(System.in);
     private int names;
-    private int studentId;
+    private int studentId,totalBooks;
     public void start(){
         System.out.print("\n1)Store new book\n2)Issue a book\n3)Return a book\n"
                                 + "4)Go Back\n");
@@ -197,9 +197,37 @@ public class Library extends DbConnection{
         try{
             initializeDbConnection();
             try{
-                st.executeUpdate("INSERT INTO `IssueBook` (LibraryId,BookID,IssueDate,ReturnDate)"+
-                "VALUES('"+studentId+"','"+bookID+"','"+issueDate+"','"+returnDate+"')");
-                
+                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "+studentId);
+                while (rs.next()) {
+                    totalNumber = rs.getInt("TotalBooks");
+                }
+                rs = st.executeQuery("SELECT * from Books WHERE BookId = "+bookID);
+                while (rs.next()) {
+                    totalBooks = rs.getInt("TotalNo");
+                }
+                if(totalNumber<15 && totalBooks!=0){
+                    
+                    totalNumber = totalNumber+1;
+                    
+                    st.executeUpdate("INSERT INTO `IssueBook` (LibraryId,BookID,IssueDate,ReturnDate)"+
+                    "VALUES('"+studentId+"','"+bookID+"','"+issueDate+"','"+returnDate+"')");
+                    
+                    st.executeUpdate("UPDATE StudentRecord SET TotalBooks="+totalNumber+" WHERE LibraryId in ("+studentId+")");
+                    
+                    rs = st.executeQuery("SELECT * from Books WHERE BookId = "+bookID);
+                    while (rs.next()) {
+                        totalBooks = rs.getInt("TotalNo");
+                    }
+                    totalBooks = totalBooks-1;
+                    st.executeUpdate("UPDATE Books SET TotalNo="+totalBooks+" WHERE BookId in ("+bookID+")");
+                    System.out.print("\nBook issued....");
+                    
+                    start();
+                }
+                else{
+                    System.out.print("\nCannot issue book as book limit exceeds");
+                    start();
+                }
             }
             catch(SQLException e){
                 System.out.print("\nError:-"+e);
@@ -264,6 +292,8 @@ public class Library extends DbConnection{
             }
         }
     }
+    
+    
     public void returnBook(){
         
     }
