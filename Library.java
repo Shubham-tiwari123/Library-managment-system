@@ -1,13 +1,15 @@
 
 package librarymanagment;
 
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+
 public class Library extends DbConnection{
-    private final Scanner sc = new Scanner(System.in);
     
+    private final Scanner sc = new Scanner(System.in);
     private int num;
     private int bookID;
     private String bookName,studentName;
@@ -17,7 +19,7 @@ public class Library extends DbConnection{
     private int count,totalPiece;
     private boolean flag,flag1;
     private int names,num1,num2,num3;
-    private int studentId,totalBooks,totalFine,fineAmount;
+    private int studentId,totalBooks,totalFine,fineAmount,indicate;
     private DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     LocalDateTime issueDate = null;
     LocalDateTime returnDate = null;
@@ -251,6 +253,184 @@ public class Library extends DbConnection{
             System.out.print("\nError:-"+e);
         }
     }
+    
+    private void findRecord(){
+        flag1=false;
+        try{
+            initializeDbConnection();
+            try{
+                rs = st.executeQuery("SELECT * from IssueBook");
+                while(rs.next()){
+                    num1=rs.getInt("BookID");
+                    num2=rs.getInt("LibraryId");
+                    num3=rs.getInt("id");
+                    Date returndate = rs.getDate("ReturnDate");
+                    if(num1==bookID && num2==studentId){
+                        flag1=false;
+                        java.util.Date today =new java.util.Date();
+                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                        if(formatter.format(returndate).compareTo(formatter.format(today))==0)
+                            break;
+                        else if(formatter.format(returndate).compareTo(formatter.format(today))>=0)
+                            break;
+                        else{
+                            putFine();
+                            break;
+                        }
+                    }
+                    else
+                        flag1 = true;
+                }
+                if (flag1) {
+                    System.out.println("Record not found..");
+                    start();
+                }
+            }
+            catch(SQLException e){
+                System.out.print("\nError:-"+e);
+            }
+            finally{
+                closeDbConnection(c);
+            }
+        }
+        catch(SQLException e){
+             System.out.print("\nError:-"+e);
+        }
+        catch(ClassNotFoundException e){
+            System.out.print("\nError:-"+e);
+        }
+    }
+    
+    private void putFine(){
+        try{
+            initializeDbConnection();
+            try{
+                totalFine=0;
+                rs = st.executeQuery("SELECT * from Books WHERE BookId = "+bookID);
+                while (rs.next()) {
+                    fineAmount = rs.getInt("Fine");
+                }
+                
+                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "+studentId);
+                while (rs.next()) {
+                    totalFine = rs.getInt("TatalFine");
+                }
+                
+                st.executeUpdate("INSERT INTO `fineRecord`(`BookId`, `LibraryId`, `Amount`)"+
+                    "VALUES('"+bookID+"','"+studentId+"','"+fineAmount+"')");
+                
+                fineAmount = totalFine+fineAmount;
+                st.executeUpdate("UPDATE StudentRecord SET TatalFine="+fineAmount+" WHERE LibraryId in ("+studentId+")");
+            }
+            catch(SQLException e){
+                System.out.print("\nError:-"+e);
+            }
+            finally{
+                closeDbConnection(c);
+            }
+        }
+        catch(SQLException e){
+             System.out.print("\nError:-"+e);
+        }
+        catch(ClassNotFoundException e){
+            System.out.print("\nError:-"+e);
+        }
+    }
+    
+    private void checkCredentials(int indicate){
+        try{
+            initializeDbConnection();
+            try{
+                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "+studentId);
+                while (rs.next()) {
+                    totalFine = rs.getInt("TatalFine");
+                }
+                if(totalFine==0 || indicate==0){
+                    rs = st.executeQuery("SELECT * from Books WHERE BookId = "+bookID);
+                    while (rs.next()) {
+                        totalBooks = rs.getInt("TotalNo");
+                    }
+                    totalBooks = totalBooks+1;
+                    st.executeUpdate("UPDATE Books SET TotalNo="+totalBooks+" WHERE BookId in ("+bookID+")");
+                    
+                    rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "+studentId);
+                    while (rs.next()) {
+                        totalNumber = rs.getInt("TotalBooks");
+                    }
+                    totalNumber=totalNumber-1;
+                    st.executeUpdate("UPDATE StudentRecord SET TotalBooks="+totalNumber+" WHERE LibraryId in ("+studentId+")");
+                    
+                    st.executeUpdate("DELETE FROM `IssueBook` WHERE id ="+num3);
+                    System.out.print("\nBook returned..");
+                    start();
+                }
+                else{
+                    payFine();
+                }
+            }
+            catch(SQLException e){
+                System.out.print("\nError:-"+e);
+            }
+            finally{
+                closeDbConnection(c);
+            }
+        }
+        catch(SQLException e){
+             System.out.print("\nError:-"+e);
+        }
+        catch(ClassNotFoundException e){
+            System.out.print("\nError:-"+e);
+        }
+    }
+    
+    private void payFine(){
+        System.out.print("\nYou have to pay:-"+totalFine);
+        System.out.print("\n1)Pay\n2)Dont pay:-");
+        num=sc.nextInt();
+        switch(num){
+            case 1:
+                try{
+                    initializeDbConnection();
+                    try{
+                        totalFine=0;
+                        st.executeUpdate("UPDATE StudentRecord SET TatalFine="+totalFine+
+                                " WHERE LibraryId in ("+studentId+")");
+                        rs = st.executeQuery("SELECT * from fineRecord");
+                        while(rs.next()){
+                            num1=rs.getInt("BookId");
+                            num2=rs.getInt("LibraryId");
+                            num3=rs.getInt("id");
+                        }
+                        if(num1==bookID && num2==studentId){
+                           st.executeUpdate("DELETE FROM `fineRecord` WHERE id ="+num3); 
+                        }
+                        checkCredentials(1);
+                    }
+                    catch(SQLException e){
+                        System.out.print("\nError:-"+e);
+                    }
+                    finally{
+                        closeDbConnection(c);
+                    }
+                }
+                catch(SQLException e){
+                     System.out.print("\nError:-"+e);
+                }
+                catch(ClassNotFoundException e){
+                    System.out.print("\nError:-"+e);
+                }
+                break;
+            case 2:
+                if(totalFine<500)
+                    checkCredentials(0);
+                else{
+                    System.out.println("\nCannot issue book...pay fine first to issue new book");
+                    start();
+                }
+                break;
+        }
+    }
+    
     public void storeNewBook(){
         System.out.print("\nBook ID:-");
         bookID = sc.nextInt();
@@ -316,122 +496,9 @@ public class Library extends DbConnection{
             System.out.print("\nStudent id:-");
             studentId = sc.nextInt();
             findRecord();
-            checkCredentials();
+            checkCredentials(1);
         }
     }
     
-    private void findRecord(){
-        try{
-            initializeDbConnection();
-            try{
-                rs = st.executeQuery("SELECT * from IssueBook");
-                while(rs.next()){
-                    num1=rs.getInt("BookID");
-                    num2=rs.getInt("LibraryId");
-                    num3=rs.getInt("id");
-                    if(num1==bookID&&num2==studentId)
-                        break;
-                    else
-                        flag=Boolean.TRUE;
-                }
-                if(flag){
-                    System.out.print("Record not found...");
-                    start();
-                }
-            }
-            catch(SQLException e){
-                System.out.print("\nError:-"+e);
-            }
-            finally{
-                closeDbConnection(c);
-            }
-        }
-        catch(SQLException e){
-             System.out.print("\nError:-"+e);
-        }
-        catch(ClassNotFoundException e){
-            System.out.print("\nError:-"+e);
-        }
-    }
-    private void checkCredentials(){
-        try{
-            initializeDbConnection();
-            try{
-                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "+studentId);
-                while (rs.next()) {
-                    totalFine = rs.getInt("TatalFine");
-                }
-                if(totalFine==0){
-                    rs = st.executeQuery("SELECT * from Books WHERE BookId = "+bookID);
-                    while (rs.next()) {
-                        totalBooks = rs.getInt("TotalNo");
-                    }
-                    totalBooks = totalBooks+1;
-                    st.executeUpdate("UPDATE Books SET TotalNo="+totalBooks+" WHERE BookId in ("+bookID+")");
-                    
-                    rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "+studentId);
-                    while (rs.next()) {
-                        totalNumber = rs.getInt("TotalBooks");
-                    }
-                    totalNumber=totalNumber-1;
-                    st.executeUpdate("UPDATE StudentRecord SET TotalBooks="+totalNumber+" WHERE LibraryId in ("+studentId+")");
-                    
-                    st.executeUpdate("DELETE FROM `IssueBook` WHERE id ="+num3);
-                    System.out.print("\nBook returned..");
-                }
-                else{
-                    payFine();
-                }
-            }
-            catch(SQLException e){
-                System.out.print("\nError:-"+e);
-            }
-            finally{
-                closeDbConnection(c);
-            }
-        }
-        catch(SQLException e){
-             System.out.print("\nError:-"+e);
-        }
-        catch(ClassNotFoundException e){
-            System.out.print("\nError:-"+e);
-        }
-    }
-    
-    private void payFine(){
-        System.out.print("\nYou have to pay:-"+totalFine);
-        System.out.print("\n1)Pay\n2)Dont pay:-");
-        num=sc.nextInt();
-        switch(num){
-            case 1:
-                try{
-                    initializeDbConnection();
-                    try{
-                        totalFine=0;
-                        st.executeUpdate("UPDATE StudentRecord SET TatalFine="+totalFine+
-                                " WHERE LibraryId in ("+studentId+")");
-                        checkCredentials();
-                    }
-                    catch(SQLException e){
-                        System.out.print("\nError:-"+e);
-                    }
-                    finally{
-                        closeDbConnection(c);
-                    }
-                }
-                catch(SQLException e){
-                     System.out.print("\nError:-"+e);
-                }
-                catch(ClassNotFoundException e){
-                    System.out.print("\nError:-"+e);
-                }
-                break;
-            case 2:start();
-                   break;
-        }
-    }
 }
-
-
-
 
