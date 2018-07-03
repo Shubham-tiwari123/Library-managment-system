@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 public class Library extends DbConnection{
     
     private final Scanner sc = new Scanner(System.in);
-    private int num;
+    private int num,id;
     private int bookID;
     private String bookName,studentName;
     private String authorName;
@@ -26,7 +26,7 @@ public class Library extends DbConnection{
     
     public void start(){
         System.out.print("\n1)Store new book\n2)Issue a book\n3)Return a book\n"
-                                + "4)Go Back\n");
+                                + "4)Register Student\n5)Go Back\n");
         System.out.print("Enter your choice:-");
         num = sc.nextInt();
         switch(num){
@@ -36,7 +36,9 @@ public class Library extends DbConnection{
                     break;
             case 3: returnBook();
                     break;
-            case 4: LibraryManagment lm = new LibraryManagment();
+            case 4: registerNewStudent();
+                    break;
+            case 5: LibraryManagment lm = new LibraryManagment();
                     lm.mainMenu();
                     break;
         }
@@ -186,6 +188,11 @@ public class Library extends DbConnection{
             try{
                 st.executeUpdate("INSERT INTO `StudentRecord` (StudentName)"+
                 "VALUES('"+studentName+"')"); 
+                rs = st.executeQuery("SELECT * from StudentRecord");
+                while (rs.next()) {
+                   id = rs.getInt("LibraryId");
+                }
+                System.out.println("Student id generated is: "+id);
                 issueBook();
             }
             catch(SQLException e){
@@ -240,17 +247,18 @@ public class Library extends DbConnection{
                 }
             }
             catch(SQLException e){
-                System.out.print("\nError:-"+e);
+                System.out.print("\nAllready consist one book...");
+                start();
             }
             finally{
                 closeDbConnection(c);
             }
         }
         catch(SQLException e){
-             System.out.print("\nError:-"+e);
+             System.out.print("\nError5:-"+e);
         }
         catch(ClassNotFoundException e){
-            System.out.print("\nError:-"+e);
+            System.out.print("\nError6:-"+e);
         }
     }
     
@@ -500,5 +508,35 @@ public class Library extends DbConnection{
         }
     }
     
+    public void registerNewStudent(){
+        System.out.print("Student name:-");
+        sc.nextLine();
+        studentName = sc.nextLine();
+        try{
+            initializeDbConnection();
+            try{
+                st.executeUpdate("INSERT INTO `StudentRecord` (StudentName)"+
+                "VALUES('"+studentName+"')"); 
+                rs = st.executeQuery("SELECT * from StudentRecord");
+                while (rs.next()) {
+                   id = rs.getInt("LibraryId");
+                }
+                System.out.println("Student id generated is: "+id);
+            }
+            catch(SQLException e){
+                System.out.print("\nError:-"+e);
+            }
+            finally{
+                closeDbConnection(c);
+            }
+        }
+        catch(SQLException e){
+             System.out.print("\nError:-"+e);
+        }
+        catch(ClassNotFoundException e){
+            System.out.print("\nError:-"+e);
+        }
+        start();
+    }
 }
 
