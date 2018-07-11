@@ -36,14 +36,14 @@ public class Student extends DbConnection{
          try{
             initializeDbConnection();
             try{ 
-                rs = st.executeQuery("SELECT * from Books");
+                resultSet = statement.executeQuery("SELECT * from Books");
                 System.out.println("BookId\tBookName\tAuthorName\tSubject\t\tTotalNo");
-                while (rs.next()) {
-                   int id = rs.getInt("BookId");
-                   String bookName= rs.getString("BookName");
-                   String authorName=rs.getString("AuthorName");
-                   String subject = rs.getString("Subject");
-                   int totalNo = rs.getInt("TotalNo");
+                while (resultSet.next()) {
+                   int id = resultSet.getInt("BookId");
+                   String bookName= resultSet.getString("BookName");
+                   String authorName=resultSet.getString("AuthorName");
+                   String subject = resultSet.getString("Subject");
+                   int totalNo = resultSet.getInt("TotalNo");
                    System.out.println(id+"\t"+bookName+"\t\t"+authorName+"\t\t"+subject+"\t\t"+totalNo);
                 }
             }
@@ -51,7 +51,7 @@ public class Student extends DbConnection{
                 System.out.print("\nError:-"+e);
             }
             finally{
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         }
         catch(SQLException e){
@@ -68,24 +68,24 @@ public class Student extends DbConnection{
         try{
             initializeDbConnection();
             try{ 
-                rs = st.executeQuery("SELECT * from IssueBook WHERE LibraryId = "+studentId);
-                while (rs.next()) {
-                    int id = rs.getInt("BookID");
-                    rs1 = st.executeQuery("SELECT * from Books WHERE BookId = "+id);
-                    while (rs.next()) {
-                        String bookName= rs.getString("BookName");
-                        String authorName=rs.getString("AuthorName");
-                        String subject = rs.getString("Subject");
+                resultSet = statement.executeQuery("SELECT * from IssueBook WHERE LibraryId = "+studentId);
+                while (resultSet.next()) {
+                    int id = resultSet.getInt("BookID");
+                    rs1 = statement.executeQuery("SELECT * from Books WHERE BookId = "+id);
+                    while (resultSet.next()) {
+                        String bookName= resultSet.getString("BookName");
+                        String authorName=resultSet.getString("AuthorName");
+                        String subject = resultSet.getString("Subject");
                         System.out.print("\n"+bookName+"\t\t"+authorName+"\t\t"+subject+"\t\t");
                     }
                 }
                 System.out.println("BookId\tBookName\tAuthorName\tSubject\t\tTotalNo");
-                while (rs.next()) {
-                   int id = rs.getInt("BookId");
-                   String bookName= rs.getString("BookName");
-                   String authorName=rs.getString("AuthorName");
-                   String subject = rs.getString("Subject");
-                   int totalNo = rs.getInt("TotalNo");
+                while (resultSet.next()) {
+                   int id = resultSet.getInt("BookId");
+                   String bookName= resultSet.getString("BookName");
+                   String authorName=resultSet.getString("AuthorName");
+                   String subject = resultSet.getString("Subject");
+                   int totalNo = resultSet.getInt("TotalNo");
                    System.out.println(id+"\t"+bookName+"\t\t"+authorName+"\t\t"+subject+"\t\t"+totalNo);
                 }
             }
@@ -93,7 +93,7 @@ public class Student extends DbConnection{
                 System.out.print("\nError:-"+e);
             }
             finally{
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         }
         catch(SQLException e){
