@@ -11,23 +11,23 @@ import java.util.Properties;
 public class DbConnection {
     protected final String dbClassName = "com.mysql.jdbc.Driver";
     protected final String CONNECTION ="jdbc:mysql://127.0.0.1/Library";
-    protected Connection c = null;
-    protected Statement st = null;
-    protected ResultSet rs = null;
+    protected Connection connect = null;
+    protected Statement statement = null;
+    protected ResultSet resultSet,rs1 = null;
     
     protected void initializeDbConnection() throws ClassNotFoundException, SQLException {
         Class.forName(dbClassName);
-        Properties p = new Properties();
-        p.put("user", "root");
-        p.put("password", "");
-        c = DriverManager.getConnection(CONNECTION, p);
-        st = c.createStatement();
+        Properties property = new Properties();
+        property.put("user", "root");
+        property.put("password", "");
+        connect = DriverManager.getConnection(CONNECTION, property);
+        statement = connect.createStatement();
     }
     
     protected void closeDbConnection(Connection connection) {
         if (connection != null) {
             try {
-                c.close();
+                connect.close();
             } catch (SQLException e) {
                System.out.println("Connection can not be ade free: " + e);
             }
