@@ -12,7 +12,7 @@ public class DbConnection {
     protected final String dbClassName = "com.mysql.jdbc.Driver";
     protected final String CONNECTION ="jdbc:mysql://127.0.0.1/Library";
     protected Connection connect = null;
-    protected Statement statement = null;
+    protected Statement statement,statement1 = null;
     protected ResultSet resultSet,rs1 = null;
     
     protected void initializeDbConnection() throws ClassNotFoundException, SQLException {
@@ -22,6 +22,7 @@ public class DbConnection {
         property.put("password", "");
         connect = DriverManager.getConnection(CONNECTION, property);
         statement = connect.createStatement();
+        statement1=connect.createStatement();
     }
     
     protected void closeDbConnection(Connection connection) {
