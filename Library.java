@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.Scanner;
 import java.sql.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 
 public class Library extends DbConnection {
 
@@ -62,10 +61,10 @@ public class Library extends DbConnection {
         try {
             super.initializeDbConnection();
             try {
-                rs = st.executeQuery("SELECT * from Books WHERE BookId = "
+                resultSet =    statement.executeQuery("SELECT * from Books WHERE BookId = "
                         + bookID);
-                while (rs.next()) {
-                    bookid = rs.getInt("BookId");
+                while (resultSet.next()) {
+                    bookid = resultSet.getInt("BookId");
                 }
                 if (bookid == bookID) {
                     flag = Boolean.FALSE;
@@ -77,7 +76,7 @@ public class Library extends DbConnection {
             } catch (Exception e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -96,15 +95,15 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                rs = st.executeQuery("SELECT * from Books WHERE BookId = "
+                resultSet =    statement.executeQuery("SELECT * from Books WHERE BookId = "
                         + bookID);
-                while (rs.next()) {
-                    totalPiece = rs.getInt("TotalNo");
+                while (resultSet.next()) {
+                    totalPiece = resultSet.getInt("TotalNo");
                 }
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -122,19 +121,19 @@ public class Library extends DbConnection {
                 switch (choice) {
                     case 1:
                         System.out.print("\nSaving info..");
-                        st.executeUpdate("INSERT INTO `Books` (BookId,BookName,AuthorName,Subject,TotalNo,Fine)"
+                        statement.executeUpdate("INSERT INTO `Books` (BookId,BookName,AuthorName,Subject,TotalNo,Fine)"
                                 + "VALUES('" + bookID + "','" + bookName + "','" + authorName + "','" + subject + "','" + totalNumber + "','" + fineamount + "')");
                         break;
                     case 2:
                         System.out.print("\nUpdating info..");
-                        st.executeUpdate("UPDATE Books SET TotalNo=" + totalNumber + " WHERE BookId in (" + bookID + ")");
+                        statement.executeUpdate("UPDATE Books SET TotalNo=" + totalNumber + " WHERE BookId in (" + bookID + ")");
                         break;
                 }
                 start();
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -175,10 +174,10 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "
+                resultSet =    statement.executeQuery("SELECT * from StudentRecord WHERE LibraryId = "
                         + studentId);
-                while (rs.next()) {
-                    libraryId = rs.getInt("LibraryId");
+                while (resultSet.next()) {
+                    libraryId = resultSet.getInt("LibraryId");
                 }
                 if (libraryId == studentId) {
                     flag = Boolean.TRUE;
@@ -190,7 +189,7 @@ public class Library extends DbConnection {
             } catch (Exception e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
             
         } catch (SQLException e) {
@@ -215,18 +214,18 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                st.executeUpdate("INSERT INTO `StudentRecord` (StudentName)"
+                statement.executeUpdate("INSERT INTO `StudentRecord` (StudentName)"
                         + "VALUES('" + studentName + "')");
-                rs = st.executeQuery("SELECT * from StudentRecord");
-                while (rs.next()) {
-                    id = rs.getInt("LibraryId");
+                resultSet =    statement.executeQuery("SELECT * from StudentRecord");
+                while (resultSet.next()) {
+                    id = resultSet.getInt("LibraryId");
                 }
                 System.out.println("Student id generated is: " + id);
                 issueBook();
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -239,29 +238,29 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
-                while (rs.next()) {
-                    totalNumber = rs.getInt("TotalBooks");
+                resultSet =    statement.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
+                while (resultSet.next()) {
+                    totalNumber = resultSet.getInt("TotalBooks");
                 }
-                rs = st.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
-                while (rs.next()) {
-                    totalBooks = rs.getInt("TotalNo");
+                resultSet =    statement.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
+                while (resultSet.next()) {
+                    totalBooks = resultSet.getInt("TotalNo");
                 }
                 if (totalNumber < 15 && totalBooks != 0) {
 
                     totalNumber = totalNumber + 1;
 
-                    st.executeUpdate("INSERT INTO `IssueBook` (LibraryId,BookID,IssueDate,ReturnDate)"
+                    statement.executeUpdate("INSERT INTO `IssueBook` (LibraryId,BookID,IssueDate,ReturnDate)"
                             + "VALUES('" + studentId + "','" + bookID + "','" + issueDate + "','" + returnDate + "')");
 
-                    st.executeUpdate("UPDATE StudentRecord SET TotalBooks=" + totalNumber + " WHERE LibraryId in (" + studentId + ")");
+                    statement.executeUpdate("UPDATE StudentRecord SET TotalBooks=" + totalNumber + " WHERE LibraryId in (" + studentId + ")");
 
-                    rs = st.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
-                    while (rs.next()) {
-                        totalBooks = rs.getInt("TotalNo");
+                    resultSet =    statement.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
+                    while (resultSet.next()) {
+                        totalBooks = resultSet.getInt("TotalNo");
                     }
                     totalBooks = totalBooks - 1;
-                    st.executeUpdate("UPDATE Books SET TotalNo=" + totalBooks + " WHERE BookId in (" + bookID + ")");
+                    statement.executeUpdate("UPDATE Books SET TotalNo=" + totalBooks + " WHERE BookId in (" + bookID + ")");
                     System.out.print("\nBook issued....");
 
                     start();
@@ -273,7 +272,7 @@ public class Library extends DbConnection {
                 System.out.print("\nAllready consist one book...");
                 start();
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError5:-" + e);
@@ -288,12 +287,12 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                rs = st.executeQuery("SELECT * from IssueBook");
-                while (rs.next()) {
-                    num1 = rs.getInt("BookID");
-                    num2 = rs.getInt("LibraryId");
-                    num3 = rs.getInt("id");
-                    Date returndate = rs.getDate("ReturnDate");
+                resultSet =    statement.executeQuery("SELECT * from IssueBook");
+                while (resultSet.next()) {
+                    num1 = resultSet.getInt("BookID");
+                    num2 = resultSet.getInt("LibraryId");
+                    num3 = resultSet.getInt("id");
+                    Date returndate = resultSet.getDate("ReturnDate");
                     if (num1 == bookID && num2 == studentId) {
                         flag = false;
                         java.util.Date today = new java.util.Date();
@@ -317,7 +316,7 @@ public class Library extends DbConnection {
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -332,25 +331,25 @@ public class Library extends DbConnection {
             initializeDbConnection();
             try {
                 totalFine = 0;
-                rs = st.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
-                while (rs.next()) {
-                    fineAmount = rs.getInt("Fine");
+                resultSet =    statement.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
+                while (resultSet.next()) {
+                    fineAmount = resultSet.getInt("Fine");
                 }
 
-                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
-                while (rs.next()) {
-                    totalFine = rs.getInt("TatalFine");
+                resultSet = statement.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
+                while (resultSet.next()) {
+                    totalFine = resultSet.getInt("TatalFine");
                 }
 
-                st.executeUpdate("INSERT INTO `fineRecord`(`BookId`, `LibraryId`, `Amount`)"
+                statement.executeUpdate("INSERT INTO `fineRecord`(`BookId`, `LibraryId`, `Amount`)"
                         + "VALUES('" + bookID + "','" + studentId + "','" + fineAmount + "')");
 
                 fineAmount = totalFine + fineAmount;
-                st.executeUpdate("UPDATE StudentRecord SET TatalFine=" + fineAmount + " WHERE LibraryId in (" + studentId + ")");
+                statement.executeUpdate("UPDATE StudentRecord SET TatalFine=" + fineAmount + " WHERE LibraryId in (" + studentId + ")");
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -363,26 +362,26 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
-                while (rs.next()) {
-                    totalFine = rs.getInt("TatalFine");
+                resultSet =    statement.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
+                while (resultSet.next()) {
+                    totalFine = resultSet.getInt("TatalFine");
                 }
                 if (totalFine == 0 || indicate == 0) {
-                    rs = st.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
-                    while (rs.next()) {
-                        totalBooks = rs.getInt("TotalNo");
+                    resultSet =    statement.executeQuery("SELECT * from Books WHERE BookId = " + bookID);
+                    while (resultSet.next()) {
+                        totalBooks = resultSet.getInt("TotalNo");
                     }
                     totalBooks = totalBooks + 1;
-                    st.executeUpdate("UPDATE Books SET TotalNo=" + totalBooks + " WHERE BookId in (" + bookID + ")");
+                    statement.executeUpdate("UPDATE Books SET TotalNo=" + totalBooks + " WHERE BookId in (" + bookID + ")");
 
-                    rs = st.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
-                    while (rs.next()) {
-                        totalNumber = rs.getInt("TotalBooks");
+                    resultSet =    statement.executeQuery("SELECT * from StudentRecord WHERE LibraryId = " + studentId);
+                    while (resultSet.next()) {
+                        totalNumber = resultSet.getInt("TotalBooks");
                     }
                     totalNumber = totalNumber - 1;
-                    st.executeUpdate("UPDATE StudentRecord SET TotalBooks=" + totalNumber + " WHERE LibraryId in (" + studentId + ")");
+                    statement.executeUpdate("UPDATE StudentRecord SET TotalBooks=" + totalNumber + " WHERE LibraryId in (" + studentId + ")");
 
-                    st.executeUpdate("DELETE FROM `IssueBook` WHERE id =" + id);
+                    statement.executeUpdate("DELETE FROM `IssueBook` WHERE id =" + id);
                     System.out.print("\nBook returned..");
                     start();
                 } else {
@@ -391,7 +390,7 @@ public class Library extends DbConnection {
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
@@ -413,22 +412,22 @@ public class Library extends DbConnection {
                     initializeDbConnection();
                     try {
                         totalFine = 0;
-                        st.executeUpdate("UPDATE StudentRecord SET TatalFine=" + totalFine
+                        statement.executeUpdate("UPDATE StudentRecord SET TatalFine=" + totalFine
                                 + " WHERE LibraryId in (" + studentId + ")");
-                        rs = st.executeQuery("SELECT * from fineRecord");
-                        while (rs.next()) {
-                            num1 = rs.getInt("BookId");
-                            num2 = rs.getInt("LibraryId");
-                            num3 = rs.getInt("id");
+                        resultSet =    statement.executeQuery("SELECT * from fineRecord");
+                        while (resultSet.next()) {
+                            num1 = resultSet.getInt("BookId");
+                            num2 = resultSet.getInt("LibraryId");
+                            num3 = resultSet.getInt("id");
                         }
                         if (num1 == bookID && num2 == studentId) {
-                            st.executeUpdate("DELETE FROM `fineRecord` WHERE id =" + num3);
+                            statement.executeUpdate("DELETE FROM `fineRecord` WHERE id =" + num3);
                         }
                         checkCredentials(1,num3);
                     } catch (SQLException e) {
                         System.out.print("\nError:-" + e);
                     } finally {
-                        closeDbConnection(c);
+                        closeDbConnection(connect);
                     }
                 } catch (SQLException e) {
                     System.out.print("\nError:-" + e);
@@ -642,17 +641,17 @@ public class Library extends DbConnection {
         try {
             initializeDbConnection();
             try {
-                st.executeUpdate("INSERT INTO `StudentRecord` (StudentName)"
+                statement.executeUpdate("INSERT INTO `StudentRecord` (StudentName)"
                         + "VALUES('" + studentName + "')");
-                rs = st.executeQuery("SELECT * from StudentRecord");
-                while (rs.next()) {
-                    id = rs.getInt("LibraryId");
+                resultSet =    statement.executeQuery("SELECT * from StudentRecord");
+                while (resultSet.next()) {
+                    id = resultSet.getInt("LibraryId");
                 }
                 System.out.println("Student id generated is: " + id);
             } catch (SQLException e) {
                 System.out.print("\nError:-" + e);
             } finally {
-                closeDbConnection(c);
+                closeDbConnection(connect);
             }
         } catch (SQLException e) {
             System.out.print("\nError:-" + e);
